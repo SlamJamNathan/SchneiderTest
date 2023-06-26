@@ -7,11 +7,6 @@ using GalaSoft.MvvmLight.Ioc;
 namespace Bomber;
 class Program
 {
-    // the app completion source that is set when the user presses a specific
-    // key (Q) to quit the application
-    private static TaskCompletionSource AppComplete { get; } = new TaskCompletionSource();
-    private static bool AppTerminated => AppComplete.Task.IsCanceled;
-
     // same as Main, but async.
     static async Task MainAsync(string[] args)
     {
