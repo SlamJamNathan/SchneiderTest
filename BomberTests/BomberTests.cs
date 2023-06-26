@@ -153,6 +153,50 @@ public class BomberTests
         Assert.AreNotEqual(model.Location, choice);
     }
 
+    protected async Task TestInValidMove(string choice1, string choice2)
+    {
+        // initialise our simpleIoc framework with the interfaces and
+        // concrete classes. - NOTE that the only difference here is that
+        // we define our test keyboad so that we can send our tests to the board.
+        var level = LoggingConstants.LogLevel.Debug;
+        var logger = new BombGameConsoleLogger(level);
+        var model = new BombGameModel();
+        var view = new BombGameConsoleView();
+        var keyboard = new BombGameTestKeyboard(logger);
+        var controller = new BombGameController(model, view, logger, keyboard);
+
+        // technically it is not really possible to end up in the situation where
+        // the above objects/interfaces are null but, this is just belt and braces to make sure...
+        // You can never tell how the application will be modified in future and this adds
+        // a level of protection to ensure.
+        Assert.IsNotNull(logger);
+        Assert.IsNotNull(keyboard);
+        Assert.IsNotNull(controller);
+        Assert.IsNotNull(model);
+        Assert.IsNotNull(view);
+
+        // call the one-time initialisation of the controller.
+        await controller.InitialiseAsync().ConfigureAwait(false);
+
+        // now start an easy game.
+        keyboard.KeysToSend = "1";
+        var ret = await keyboard.RunAsync().ConfigureAwait(false);
+
+        // now set our initial position.
+        keyboard.KeysToSend = choice1;
+        ret = await keyboard.RunAsync().ConfigureAwait(false);
+
+        // now set our initial position.
+        keyboard.KeysToSend = choice2;
+        int currentMoves = model.Moves;
+        ret = await keyboard.RunAsync().ConfigureAwait(false);
+
+        Assert.AreEqual(ret, true);
+        Assert.AreEqual(model.CurrentState, AppConstants.GameState.InProgress);
+        Assert.AreEqual(model.Moves, currentMoves);
+        Assert.AreNotEqual(model.Location, choice2);
+    }
+
     [TestMethod]
     public async Task TestValidStartPosition()
     {
@@ -173,6 +217,12 @@ public class BomberTests
     public async Task TestInValidStartPosition()
     {
         await TestInValidPosition("B1").ConfigureAwait(false);
+    }
+
+    [TestMethod]
+    public async Task TestInValidMove()
+    {
+        await TestInValidMove("A1", "C3").ConfigureAwait(false);
     }
 
 }
